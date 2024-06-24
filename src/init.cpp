@@ -5,10 +5,10 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 WiFiUDP ntpUDP;
 NTPClient ntpClient(ntpUDP, "south-america.pool.ntp.org", -5 * 3600, 60000);
 char menuItems[NUM_ITEMS][MAX_ITEM_LENGTH] = {
-    {"Opcion 2"},
-    {"Opcion 3"},
+    {"Cronometro"},
+    {"Musica"},
     {"Salir"},
-    {"Opcion 1"}};
+    {"Notificaciones"}};
 
 void initWifi()
 {
