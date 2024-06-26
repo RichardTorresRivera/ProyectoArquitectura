@@ -7,8 +7,7 @@
 // Comunicacions 12C
 #include <Wire.h>
 // Manejo de graficos
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+#include "OLED_I2C.h"
 // Conexion a Wifi
 #include <WiFi.h>
 #include <WiFiUdp.h>
@@ -32,8 +31,10 @@
 ****************************************************************/
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
-#define SCREEN_ADDRESS 0x3C
-extern Adafruit_SSD1306 display;
+extern OLED myOLED;
+// Fuentes
+extern uint8_t SmallFont[];
+extern uint8_t arial_bold[];
 
 /****************************************************************
                        CONFIGURACION DE WIFI
@@ -44,17 +45,32 @@ extern WiFiUDP ntpUDP;
 extern NTPClient ntpClient;
 
 /****************************************************************
+                       CONFIGURACION DE TELEGRAM
+****************************************************************/
+
+/****************************************************************
                        PANTALLAS
 ****************************************************************/
 #define SCREEN_CLOCK 0
 #define SCREEN_MENU 1
-#define SCREEN_CALL 2
+#define SCREEN_ITEM 2
+#define SCREEN_CALL 3
 
 /****************************************************************
                        ITEMS
 ****************************************************************/
+// Posicion en pantalla
+#define ITEM_PREVIUS 0
+#define ITEM_SELECTED 1
+#define ITEM_NEXT 2
+// Arreglo de items
 const int NUM_ITEMS = 4;
 const int MAX_ITEM_LENGTH = 20;
 extern char menuItems[NUM_ITEMS][MAX_ITEM_LENGTH];
+// Numero de item
+#define ITEM_MUSIC 0
+#define ITEM_NOTIFICATIONS 1
+#define ITEM_CHRONOMETER 2
+#define ITEM_EXIT 3
 
 #endif
