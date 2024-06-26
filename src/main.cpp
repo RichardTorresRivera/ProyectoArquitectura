@@ -2,6 +2,7 @@
 #include "init.h"
 #include "draw.h"
 
+OLED display(SCREEN_ADDRESS, OLED_SDA, OLED_SCL);
 // pantallas
 int currentScreen = SCREEN_CLOCK;
 int previusScreen = -1;
@@ -12,9 +13,13 @@ bool pressDown = false;
 // items
 int items[] = {3, 0, 1};
 
-void setup()
-{
+void setup() {
     Serial.begin(9600);
+    Wire.begin(OLED_SDA, OLED_SCL);
+    display.begin();
+    display.clrScr(); 
+    display.update();
+
     initWifi();
     initNtpClient();
     initButtons();
