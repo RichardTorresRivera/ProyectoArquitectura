@@ -8,10 +8,10 @@ void drawClock(bool fullRedraw)
     if (fullRedraw)
     {
         display.clrScr();
+        display.drawBitmap(0, 0, weather, 128, 64);
         display.setFont(SmallFont);
         display.drawLine(0, 15, 128, 15);
         display.print("Clima:", 46, 53);
-        display.drawBitmap(6, 23, weather, 64, 32);
         display.print("C", 96, 53);
     }
     // Dibujo de temperatura
