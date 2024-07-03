@@ -7,7 +7,8 @@
 // Comunicacions 12C
 #include <Wire.h>
 // Manejo de graficos
-#include "OLED_I2C.h"
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 // Conexion a Wifi
 #include <WiFi.h>
 #include <WiFiUdp.h>
@@ -31,22 +32,27 @@
 ****************************************************************/
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
-extern OLED myOLED;
-// Fuentes
-extern uint8_t SmallFont[];
-extern uint8_t arial_bold[];
+#define SCREEN_ADDRESS 0x3C
+extern Adafruit_SSD1306 display;
 
 /****************************************************************
                        CONFIGURACION DE WIFI
 ****************************************************************/
-#define WIFI_SSID "Wokwi-GUEST"
-#define WIFI_PASSWD ""
+#define WIFI_SSID "Wokwi-GUEST" // "Casa Aguilar"   // "Wokwi-GUEST"
+#define WIFI_PASSWD ""          // "Alejandrina01"  // ""
 extern WiFiUDP ntpUDP;
 extern NTPClient ntpClient;
 
 /****************************************************************
                        CONFIGURACION DE TELEGRAM
 ****************************************************************/
+
+/****************************************************************
+                       CONFIGURACION DE FECHAS
+****************************************************************/
+extern const char *daysOfTheWeek[7];
+// Array de meses en español
+extern const char *monthsOfTheYear[12];
 
 /****************************************************************
                        PANTALLAS
@@ -64,13 +70,16 @@ extern NTPClient ntpClient;
 #define ITEM_SELECTED 1
 #define ITEM_NEXT 2
 // Arreglo de items
-const int NUM_ITEMS = 4;
+const int NUM_ITEMS = 6;
 const int MAX_ITEM_LENGTH = 20;
 extern char menuItems[NUM_ITEMS][MAX_ITEM_LENGTH];
+extern const unsigned char *icons_bitmaps[NUM_ITEMS];
 // Numero de item
 #define ITEM_MUSIC 0
 #define ITEM_NOTIFICATIONS 1
 #define ITEM_CHRONOMETER 2
-#define ITEM_EXIT 3
+#define ITEM_ALARM 3
+#define ITEM_GAME 4
+#define ITEM_EXIT 5
 
 #endif

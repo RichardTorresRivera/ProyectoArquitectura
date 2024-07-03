@@ -1,14 +1,20 @@
 #include "declarations.h"
+#include "menu_icons.h"
 #include "init.h"
 
-OLED myOLED(OLED_SDA, OLED_SCL);
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 WiFiUDP ntpUDP;
 NTPClient ntpClient(ntpUDP, "south-america.pool.ntp.org", -5 * 3600, 60000);
 char menuItems[NUM_ITEMS][MAX_ITEM_LENGTH] = {
-    {"Notificaciones"},
     {"Musica"},
+    {"Notificaciones"},
     {"Cronometro"},
+    {"Alarma"},
+    {"Juego"},
     {"Salir"}};
+const unsigned char *icons_bitmaps[NUM_ITEMS] = {image_icon_music_bits, image_icon_bell_bits, image_icon_clock_bits, image_icon_alarm_bits, image_icon_game_bits, image_icon_out_bits};
+const char *daysOfTheWeek[7] = {"DOM", "LUN", "MAR", "MIE", "JUE", "VIE", "SAB"};
+const char *monthsOfTheYear[12] = {"ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"};
 
 void initWifi()
 {
@@ -38,12 +44,12 @@ void initButtons()
 
 void initScreen()
 {
-    if (!myOLED.begin(SSD1306_128X64))
+    if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
     {
         Serial.println(F("SSD1306 allocation failed"));
         for (;;)
             ;
     }
     Serial.println("Pantalla funcionando ...");
-    myOLED.clrScr();
+    display.clearDisplay();
 }

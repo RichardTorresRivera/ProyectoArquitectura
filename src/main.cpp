@@ -10,7 +10,7 @@ bool pressSelect = false;
 bool pressUp = false;
 bool pressDown = false;
 // items
-int items[] = {3, 0, 1};
+int items[] = {ITEM_MUSIC, ITEM_NOTIFICATIONS, ITEM_CHRONOMETER};
 // tiempo cronometro
 unsigned long startTime = 0;
 unsigned long elapsedTime = 0;
@@ -29,138 +29,118 @@ void setup()
     Serial.println("-----------------------------");
 }
 
-void loop()
+void handleButtonPress(int button, bool &pressFlag, void (*action)())
 {
+    if (digitalRead(button) == LOW)
+    {
+        pressFlag = true;
+    }
+    if (digitalRead(button) == HIGH && pressFlag)
+    {
+        pressFlag = false;
+        action();
+    }
+}
+
+void selectAction()
+{
+    Serial.println("Boton Select apretado");
     if (currentScreen == SCREEN_CLOCK)
     {
-        if (digitalRead(BUTTON_SELECT) == LOW)
-        {
-            pressSelect = true;
-        }
-        if (digitalRead(BUTTON_SELECT) == HIGH && pressSelect)
-        {
-            pressSelect = false;
-            currentScreen = SCREEN_MENU;
-        }
+        currentScreen = SCREEN_MENU;
     }
     else if (currentScreen == SCREEN_MENU)
     {
-        if (digitalRead(BUTTON_UP) == LOW)
+        if (items[ITEM_SELECTED] == ITEM_EXIT)
         {
-            pressUp = true;
+            currentScreen = SCREEN_CLOCK;
         }
-        if (digitalRead(BUTTON_UP) == HIGH && pressUp)
+        else if (items[ITEM_SELECTED] == ITEM_CHRONOMETER)
         {
-            pressUp = false;
-            items[ITEM_SELECTED]--;
-            if (items[ITEM_SELECTED] < 0)
-            {
-                items[ITEM_SELECTED] = NUM_ITEMS - 1;
-            }
-        }
-        if (digitalRead(BUTTON_DOWN) == LOW)
-        {
-            pressDown = true;
-        }
-        if (digitalRead(BUTTON_DOWN) == HIGH && pressDown)
-        {
-            pressDown = false;
-            items[ITEM_SELECTED]++;
-            if (items[ITEM_SELECTED] >= NUM_ITEMS)
-            {
-                items[ITEM_SELECTED] = 0;
-            }
-        }
-        if (digitalRead(BUTTON_SELECT) == LOW)
-        {
-            pressSelect = true;
-        }
-        if (digitalRead(BUTTON_SELECT) == HIGH && pressSelect)
-        {
-            pressSelect = false;
-            if (items[ITEM_SELECTED] == ITEM_EXIT)
-            {
-                currentScreen = SCREEN_CLOCK;
-            }
-            else
-            {
-                if (items[ITEM_SELECTED] == ITEM_CHRONOMETER)
-                {
-                    currentScreen = SCREEN_ITEM;
-                }
-            }
-        }
-        items[ITEM_PREVIUS] = items[ITEM_SELECTED] - 1;
-        if (items[ITEM_PREVIUS] < 0)
-        {
-            items[ITEM_PREVIUS] = NUM_ITEMS - 1;
-        }
-        items[ITEM_NEXT] = items[ITEM_SELECTED] + 1;
-        if (items[ITEM_NEXT] >= NUM_ITEMS)
-        {
-            items[ITEM_NEXT] = 0;
+            currentScreen = SCREEN_ITEM;
         }
     }
     else if (currentScreen == SCREEN_ITEM)
     {
-        if (items[ITEM_SELECTED] == ITEM_CHRONOMETER)
+        switch (items[ITEM_SELECTED])
         {
-            // Boton de start y pause
-            if (digitalRead(BUTTON_UP) == LOW)
-            {
-                pressUp = true;
-            }
-            if (digitalRead(BUTTON_UP) == HIGH && pressUp)
-            {
-                pressUp = false;
-                Serial.println("$$$$ START:PAUSE presionado");
-                runningChronometer = !runningChronometer;
-                if (runningChronometer)
-                {
-                    startTime = millis() - elapsedTime;
-                }
-            }
-            // Boton de reset
-            if (digitalRead(BUTTON_DOWN) == LOW)
-            {
-                pressDown = true;
-            }
-            if (digitalRead(BUTTON_DOWN) == HIGH && pressDown)
-            {
-                pressDown = false;
-                Serial.println(">>>> RESET presionado");
-                elapsedTime = 0;
-                runningChronometer = false;
-                startTime = millis();
-            }
-            // Boton de salir
-            if (digitalRead(BUTTON_SELECT) == LOW)
-            {
-                pressSelect = true;
-            }
-            if (digitalRead(BUTTON_SELECT) == HIGH && pressSelect)
-            {
-                pressSelect = false;
-                runningChronometer = false;
-                startTime = 0;
-                elapsedTime = 0;
-                currentScreen = SCREEN_MENU;
-            }
-            if (runningChronometer)
-            {
-                elapsedTime = millis() - startTime;
-            }
+        case ITEM_CHRONOMETER:
+            elapsedTime = 0;
+            runningChronometer = false;
+            startTime = millis();
+            break;
+        default:
+            break;
         }
     }
-    // dibujar
+}
+
+void upAction()
+{
+    Serial.println("Boton Up apretado");
+    if (currentScreen == SCREEN_MENU)
+    {
+        items[ITEM_SELECTED]--;
+        if (items[ITEM_SELECTED] < 0)
+        {
+            items[ITEM_SELECTED] = NUM_ITEMS - 1;
+        }
+    }
+    else if (currentScreen == SCREEN_ITEM)
+    {
+        switch (items[ITEM_SELECTED])
+        {
+        case ITEM_CHRONOMETER:
+            runningChronometer = !runningChronometer;
+            if (runningChronometer)
+            {
+                startTime = millis() - elapsedTime;
+            }
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+void downAction()
+{
+    Serial.println("Boton Down apretado");
+    if (currentScreen == SCREEN_MENU)
+    {
+        items[ITEM_SELECTED]++;
+        if (items[ITEM_SELECTED] >= NUM_ITEMS)
+        {
+            items[ITEM_SELECTED] = 0;
+        }
+    }
+    else if (currentScreen == SCREEN_ITEM)
+    {
+        switch (items[ITEM_SELECTED])
+        {
+        // salir
+        case ITEM_CHRONOMETER:
+            runningChronometer = false;
+            startTime = 0;
+            elapsedTime = 0;
+            currentScreen = SCREEN_MENU;
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+void updateScreen()
+{
     if (currentScreen != previusScreen)
     {
-        if (currentScreen == SCREEN_CLOCK)
+        switch (currentScreen)
         {
+        case SCREEN_CLOCK:
             drawClock(true);
-        }
-        else if (currentScreen == SCREEN_MENU)
-        {
+            break;
+        case SCREEN_MENU:
             if (previusScreen != SCREEN_ITEM)
             {
                 // Reinicio de visualizion de items
@@ -169,32 +149,56 @@ void loop()
                 items[ITEM_NEXT] = ITEM_CHRONOMETER;
             }
             drawMenu(true, items);
-        }
-        else if (currentScreen == SCREEN_ITEM)
-        {
+            break;
+        case SCREEN_ITEM:
             if (items[ITEM_SELECTED] == ITEM_CHRONOMETER)
-            { // cronometro
+            {
                 drawChronometer(true, elapsedTime);
             }
+            break;
         }
         previusScreen = currentScreen;
     }
     else
     {
-        if (currentScreen == SCREEN_CLOCK)
+        switch (currentScreen)
         {
+        case SCREEN_CLOCK:
             drawClock(false);
-        }
-        else if (currentScreen == SCREEN_MENU)
-        {
+            break;
+        case SCREEN_MENU:
+            items[ITEM_PREVIUS] = items[ITEM_SELECTED] - 1;
+            if (items[ITEM_PREVIUS] < 0)
+            {
+                items[ITEM_PREVIUS] = NUM_ITEMS - 1;
+            }
+            items[ITEM_NEXT] = items[ITEM_SELECTED] + 1;
+            if (items[ITEM_NEXT] >= NUM_ITEMS)
+            {
+                items[ITEM_NEXT] = 0;
+            }
             drawMenu(false, items);
-        }
-        else if (currentScreen == SCREEN_ITEM)
-        {
+            break;
+        case SCREEN_ITEM:
             if (items[ITEM_SELECTED] == ITEM_CHRONOMETER)
-            { // cronometro
+            {
                 drawChronometer(false, elapsedTime);
             }
+            break;
         }
     }
+}
+
+void loop()
+{
+    handleButtonPress(BUTTON_SELECT, pressSelect, selectAction);
+    handleButtonPress(BUTTON_UP, pressUp, upAction);
+    handleButtonPress(BUTTON_DOWN, pressDown, downAction);
+
+    if (runningChronometer)
+    {
+        elapsedTime = millis() - startTime;
+    }
+
+    updateScreen();
 }
