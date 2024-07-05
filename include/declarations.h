@@ -12,7 +12,10 @@
 // Conexion a Wifi
 #include <WiFi.h>
 #include <WiFiUdp.h>
-// Cliente NTP
+#include <WebServer.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+//  Cliente NTP
 #include <NTPClient.h>
 
 /****************************************************************
@@ -38,8 +41,6 @@ extern Adafruit_SSD1306 display;
 /****************************************************************
                        CONFIGURACION DE WIFI
 ****************************************************************/
-#define WIFI_SSID "Wokwi-GUEST" // "Casa Aguilar"   // "Wokwi-GUEST"
-#define WIFI_PASSWD ""          // "Alejandrina01"  // ""
 extern WiFiUDP ntpUDP;
 extern NTPClient ntpClient;
 
@@ -70,16 +71,17 @@ extern const char *monthsOfTheYear[12];
 #define ITEM_SELECTED 1
 #define ITEM_NEXT 2
 // Arreglo de items
-const int NUM_ITEMS = 6;
+const int NUM_ITEMS = 7;
 const int MAX_ITEM_LENGTH = 20;
 extern char menuItems[NUM_ITEMS][MAX_ITEM_LENGTH];
 extern const unsigned char *icons_bitmaps[NUM_ITEMS];
-// Numero de item
+// Numero de item (indice de array de menuItems)
 #define ITEM_MUSIC 0
 #define ITEM_NOTIFICATIONS 1
 #define ITEM_CHRONOMETER 2
-#define ITEM_ALARM 3
-#define ITEM_GAME 4
-#define ITEM_EXIT 5
+#define ITEM_LINTERN 3
+#define ITEM_ALARM 4
+#define ITEM_GAME 5
+#define ITEM_EXIT 6
 
 #endif

@@ -1,24 +1,30 @@
 #include "declarations.h"
+#include "config.h"
 #include "menu_icons.h"
 #include "init.h"
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 WiFiUDP ntpUDP;
 NTPClient ntpClient(ntpUDP, "south-america.pool.ntp.org", -5 * 3600, 60000);
+
+// Menu e items
 char menuItems[NUM_ITEMS][MAX_ITEM_LENGTH] = {
     {"Musica"},
     {"Notificaciones"},
     {"Cronometro"},
+    {"Linterna"},
     {"Alarma"},
     {"Juego"},
     {"Salir"}};
-const unsigned char *icons_bitmaps[NUM_ITEMS] = {image_icon_music_bits, image_icon_bell_bits, image_icon_clock_bits, image_icon_alarm_bits, image_icon_game_bits, image_icon_out_bits};
+const unsigned char *icons_bitmaps[NUM_ITEMS] = {image_icon_music_bits, image_icon_bell_bits, image_icon_clock_bits, image_icon_lintern_bits, image_icon_alarm_bits, image_icon_game_bits, image_icon_out_bits};
+
+// Fecha
 const char *daysOfTheWeek[7] = {"DOM", "LUN", "MAR", "MIE", "JUE", "VIE", "SAB"};
 const char *monthsOfTheYear[12] = {"ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"};
 
 void initWifi()
 {
-    WiFi.begin(WIFI_SSID, WIFI_PASSWD, 6);
+    WiFi.begin(WIFI_SSID, WIFI_PASS, 6);
     while (WiFi.status() != WL_CONNECTED)
     {
         delay(1000);

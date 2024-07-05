@@ -96,6 +96,28 @@ void drawMenu(bool fullRedraw, int items[])
     display.display();
 }
 
+void drawCallMissed(const char *contact, const char *number)
+{
+    display.clearDisplay();
+    display.setTextColor(WHITE);
+    display.setTextSize(1);
+    display.drawRect(2, 2, 124, 60, 1);
+    display.setCursor(20, 7);
+    display.print("LLAMADA PERDIDA");
+    display.drawBitmap(57, 20, image_phone_not_connected_bits, 15, 16, 1);
+    int16_t x1, y1;
+    uint16_t w, h;
+    // Contacto
+    display.getTextBounds(contact, 0, 0, &x1, &y1, &w, &h);
+    display.setCursor((128 - w) / 2, 39);
+    display.print(contact);
+    // Número
+    display.getTextBounds(number, 0, 0, &x1, &y1, &w, &h);
+    display.setCursor((128 - w) / 2, 49);
+    display.print(number);
+    display.display();
+}
+
 void drawChronometer(bool fullRedraw, unsigned long elapsedTime)
 {
     if (fullRedraw)
@@ -107,14 +129,14 @@ void drawChronometer(bool fullRedraw, unsigned long elapsedTime)
         display.setCursor(35, 7);
         display.print("Cronometro");
         // pausa
-        display.drawBitmap(33, 40, image_icon_pausa_bits, 11, 11, 1);
-        display.drawBitmap(29, 53, str_pausa_bits, 19, 5, 1);
+        display.drawBitmap(35, 40, image_icon_pausa_bits, 11, 11, 1);
+        display.drawBitmap(31, 53, str_pausa_bits, 19, 5, 1);
+        // exit
+        display.drawBitmap(59, 40, image_icon_exit_bits, 11, 11, 1);
+        display.drawBitmap(55, 53, str_exit_bits, 19, 5, 1);
         // reset
-        display.drawBitmap(58, 40, image_icon_reset_bits, 11, 11, 1);
-        display.drawBitmap(54, 53, str_reset_bits, 19, 5, 1);
-        // salir
-        display.drawBitmap(83, 40, image_icon_exit_bits, 11, 11, 1);
-        display.drawBitmap(79, 53, str_exit_bits, 19, 5, 1);
+        display.drawBitmap(83, 40, image_icon_reset_bits, 11, 11, 1);
+        display.drawBitmap(79, 53, str_reset_bits, 19, 5, 1);
     }
     // Dibujo de la cuenta
     display.fillRect(16, 21, 98, 16, BLACK);
@@ -124,5 +146,77 @@ void drawChronometer(bool fullRedraw, unsigned long elapsedTime)
     display.setTextSize(2);
     display.setCursor(17, 22);
     display.printf("%02d:%02d:%02d", minutes, seconds, milliseconds);
+    display.display();
+}
+
+void drawMusic(bool fullRedraw)
+{
+    if (fullRedraw)
+    {
+        display.clearDisplay();
+        drawFrame();
+        display.setTextColor(WHITE);
+        display.setTextSize(1);
+        display.setCursor(43, 7);
+        display.print("Spotify");
+        // pausa
+        display.drawBitmap(35, 40, image_icon_pausa_bits, 11, 11, 1);
+        display.drawBitmap(31, 53, str_pausa_bits, 19, 5, 1);
+        // exit
+        display.drawBitmap(59, 40, image_icon_exit_bits, 11, 11, 1);
+        display.drawBitmap(55, 53, str_exit_bits, 19, 5, 1);
+        // next
+        display.drawBitmap(83, 40, image_icon_next_bits, 11, 11, 1);
+        display.drawBitmap(79, 53, str_next_bits, 19, 5, 1);
+    }
+    display.fillRect(7, 19, 114, 20, BLACK);
+    // nombre de cancion
+    display.setCursor(20, 19);
+    display.print("nombre: cancion");
+    // nombre de autor
+    display.setCursor(15, 29);
+    display.print("autor: de cancion");
+    display.display();
+}
+
+void drawAlarm(bool fullRedraw)
+{
+    if (fullRedraw)
+    {
+        display.clearDisplay();
+        drawFrame();
+        display.setTextColor(WHITE);
+        display.setTextSize(1);
+        display.setCursor(43, 7);
+        display.print("Alarma");
+    }
+    display.display();
+}
+
+void drawGame(bool fullRedraw)
+{
+    if (fullRedraw)
+    {
+        display.clearDisplay();
+        drawFrame();
+        display.setTextColor(WHITE);
+        display.setTextSize(1);
+        display.setCursor(43, 7);
+        display.print("Juego");
+    }
+    display.display();
+}
+
+void drawNotifications(bool fullRedraw)
+{
+    if (fullRedraw)
+    {
+        display.clearDisplay();
+        drawFrame();
+        display.setTextColor(WHITE);
+        display.setTextSize(1);
+        display.setCursor(23, 7);
+        display.print("Notificaciones");
+    }
     display.display();
 }
