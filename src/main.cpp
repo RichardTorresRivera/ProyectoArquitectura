@@ -1,27 +1,38 @@
 #include "declarations.h"
 #include "iniciar/init.h"
 #include "dibujar/draw.h"
+#include "server/server.h"
+#include "items/items.h"
+#include "client/client.h"
 
-// pantallas
-int currentScreen = SCREEN_CLOCK;
-int previusScreen = -1;
-// botones
+// Tarea del nucleo 0
+TaskHandle_t Load;
+void loop0(void *parameter);
+
+// Manejo de pantallas
+byte currentScreen = SCREEN_CLOCK;
+byte previusScreen = SCREEN_LOAD;
+// Items
+int items[] = {ITEM_LINTERN, ITEM_MUSIC, ITEM_CHRONOMETER};
+
+// Botones
 bool pressSelect = false;
 bool pressUp = false;
 bool pressDown = false;
-// items
-int items[] = {ITEM_MUSIC, ITEM_NOTIFICATIONS, ITEM_CHRONOMETER};
-// tiempo cronometro
+
+// Tiempo cronometro
+bool runningChronometer = false;
 unsigned long startTime = 0;
 unsigned long elapsedTime = 0;
-bool runningChronometer = false;
-// variable de musica
+
+// Musica
 bool play_pause_music = true;
-//  variable de linterna
+
+// Linterna
 bool linter_on = false;
-// Peticiones HTTP
-// const char *name = "Richi ttt";
-// const char *num = "123456777";
+
+// Progreso
+unsigned int progress = 0;
 
 void setup()
 {
@@ -32,8 +43,12 @@ void setup()
     Serial.println("-----------------------------");
     initButtons();
     Serial.println("-----------------------------");
+    initPines();
+    Serial.println("-----------------------------");
     initScreen();
     Serial.println("-----------------------------");
+    initServer(currentScreen);
+    xTaskCreatePinnedToCore(loop0, "Load", 10000, NULL, 1, &Load, 0);
 }
 
 void handleButtonPress(int button, bool &pressFlag, void (*action)())
@@ -47,60 +62,6 @@ void handleButtonPress(int button, bool &pressFlag, void (*action)())
         pressFlag = false;
         action();
     }
-}
-
-void sendIFTTTRequest(String eventName)
-{
-    if (WiFi.status() == WL_CONNECTED)
-    {
-        String url = "https://maker.ifttt.com/trigger/" + eventName + "/with/key/coIu6h1x2g7m_a3RP9gVM_";
-        // Enviar peticion a IFTTT
-        HTTPClient http;
-        http.begin(url);
-        Serial.println("[HTTP] GET...");
-        int httpCode = http.GET();
-        if (httpCode > 0)
-        {
-            Serial.printf("[HTTP] GET... code: %d\n", httpCode);
-            if (httpCode == HTTP_CODE_OK)
-            {
-                String payload = http.getString();
-                Serial.println(payload);
-            }
-        }
-        else
-        {
-            Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
-        }
-        http.end();
-    }
-    else
-    {
-        Serial.println("WiFi not connected");
-    }
-}
-
-void playPauseMusic()
-{
-    play_pause_music = !play_pause_music;
-    if (play_pause_music)
-    {
-        // logica de play
-        Serial.println("Play a music");
-        sendIFTTTRequest("spotify_play");
-    }
-    else
-    {
-        // logica de pausa
-        Serial.println("Pausa a music");
-        sendIFTTTRequest("spotify_pause");
-    }
-}
-
-void nextMusic()
-{
-    Serial.println("Siguiente cancion");
-    sendIFTTTRequest("spotify_next");
 }
 
 void selectAction()
@@ -122,11 +83,19 @@ void selectAction()
             if (linter_on)
             {
                 Serial.println("Encendiendo linterna");
+                digitalWrite(LED, HIGH);
             }
             else
             {
                 Serial.println("Apagando linterna");
+                digitalWrite(LED, LOW);
             }
+        }
+        else if (items[ITEM_SELECTED] == ITEM_SOUND)
+        {
+            currentScreen = SCREEN_LOAD;
+            toneMaxMovil();
+            currentScreen = SCREEN_ITEM;
         }
         else
         {
@@ -139,9 +108,7 @@ void selectAction()
         {
         case ITEM_CHRONOMETER:
             // exit
-            runningChronometer = false;
-            startTime = 0;
-            elapsedTime = 0;
+            exitChronometer(runningChronometer, startTime, elapsedTime);
             currentScreen = SCREEN_MENU;
             break;
         case ITEM_MUSIC:
@@ -154,14 +121,12 @@ void selectAction()
             Serial.println("Saliendo de alarma");
             currentScreen = SCREEN_MENU;
             break;
-        case ITEM_NOTIFICATIONS:
-            // exit
-            Serial.println("Saliendo de notificaciones");
-            currentScreen = SCREEN_MENU;
-            break;
         case ITEM_GAME:
             // exit
             Serial.println("Saliendo de juego");
+            currentScreen = SCREEN_MENU;
+            break;
+        case ITEM_SOUND:
             currentScreen = SCREEN_MENU;
             break;
         default:
@@ -190,15 +155,10 @@ void upAction()
         switch (items[ITEM_SELECTED])
         {
         case ITEM_CHRONOMETER:
-            // run - pause
-            runningChronometer = !runningChronometer;
-            if (runningChronometer)
-            {
-                startTime = millis() - elapsedTime;
-            }
+            startPauseChronometer(runningChronometer, startTime, elapsedTime);
             break;
         case ITEM_MUSIC:
-            playPauseMusic();
+            playPauseMusic(play_pause_music);
             break;
         default:
             break;
@@ -223,9 +183,7 @@ void downAction()
         {
         case ITEM_CHRONOMETER:
             // reset
-            elapsedTime = 0;
-            runningChronometer = false;
-            startTime = millis();
+            resetChronometer(runningChronometer, startTime, elapsedTime);
             break;
         case ITEM_MUSIC:
             nextMusic();
@@ -238,101 +196,97 @@ void downAction()
 
 void updateScreen()
 {
-    if (currentScreen != SCREEN_CALL)
+    if (currentScreen != previusScreen)
     {
-        if (currentScreen != previusScreen)
+        switch (currentScreen)
         {
-            switch (currentScreen)
+        case SCREEN_CLOCK:
+            drawClock(true);
+            break;
+        case SCREEN_MENU:
+            if (previusScreen != SCREEN_ITEM)
             {
-            case SCREEN_CLOCK:
-                drawClock(true);
+                // Reinicio de visualizion de items
+                items[ITEM_PREVIUS] = ITEM_LINTERN;
+                items[ITEM_SELECTED] = ITEM_MUSIC;
+                items[ITEM_NEXT] = ITEM_CHRONOMETER;
+            }
+            drawMenu(true, items);
+            break;
+        case SCREEN_ITEM:
+            switch (items[ITEM_SELECTED])
+            {
+            case ITEM_CHRONOMETER:
+                drawChronometer(true, elapsedTime);
                 break;
-            case SCREEN_MENU:
-                if (previusScreen != SCREEN_ITEM)
-                {
-                    // Reinicio de visualizion de items
-                    items[ITEM_PREVIUS] = ITEM_MUSIC;
-                    items[ITEM_SELECTED] = ITEM_NOTIFICATIONS;
-                    items[ITEM_NEXT] = ITEM_CHRONOMETER;
-                }
-                drawMenu(true, items);
+            case ITEM_MUSIC:
+                drawMusic(true);
                 break;
-            case SCREEN_ITEM:
-                switch (items[ITEM_SELECTED])
-                {
-                case ITEM_CHRONOMETER:
-                    drawChronometer(true, elapsedTime);
-                    break;
-                case ITEM_MUSIC:
-                    drawMusic(true);
-                    break;
-                case ITEM_ALARM:
-                    drawAlarm(true);
-                    break;
-                case ITEM_NOTIFICATIONS:
-                    drawNotifications(true);
-                    // drawCallMissed(name, num);
-                    break;
-                case ITEM_GAME:
-                    drawGame(true);
-                    break;
-                default:
-                    break;
-                }
+            case ITEM_ALARM:
+                drawAlarm(true);
+                break;
+            case ITEM_GAME:
+                drawGame(true);
+                break;
+            case ITEM_SOUND:
+                drawSoundMovil(true);
+                break;
+            default:
                 break;
             }
-            previusScreen = currentScreen;
+            break;
         }
-        else
+        previusScreen = currentScreen;
+    }
+    else
+    {
+        switch (currentScreen)
         {
-            switch (currentScreen)
+        case SCREEN_CLOCK:
+            drawClock(false);
+            break;
+        case SCREEN_MENU:
+            items[ITEM_PREVIUS] = items[ITEM_SELECTED] - 1;
+            if (items[ITEM_PREVIUS] < 0)
             {
-            case SCREEN_CLOCK:
-                drawClock(false);
+                items[ITEM_PREVIUS] = NUM_ITEMS - 1;
+            }
+            items[ITEM_NEXT] = items[ITEM_SELECTED] + 1;
+            if (items[ITEM_NEXT] >= NUM_ITEMS)
+            {
+                items[ITEM_NEXT] = 0;
+            }
+            drawMenu(false, items);
+            break;
+        case SCREEN_ITEM:
+            switch (items[ITEM_SELECTED])
+            {
+            case ITEM_CHRONOMETER:
+                drawChronometer(false, elapsedTime);
                 break;
-            case SCREEN_MENU:
-                items[ITEM_PREVIUS] = items[ITEM_SELECTED] - 1;
-                if (items[ITEM_PREVIUS] < 0)
-                {
-                    items[ITEM_PREVIUS] = NUM_ITEMS - 1;
-                }
-                items[ITEM_NEXT] = items[ITEM_SELECTED] + 1;
-                if (items[ITEM_NEXT] >= NUM_ITEMS)
-                {
-                    items[ITEM_NEXT] = 0;
-                }
-                drawMenu(false, items);
+            case ITEM_MUSIC:
+                drawMusic(false);
                 break;
-            case SCREEN_ITEM:
-                switch (items[ITEM_SELECTED])
-                {
-                case ITEM_CHRONOMETER:
-                    drawChronometer(false, elapsedTime);
-                    break;
-                case ITEM_MUSIC:
-                    drawMusic(false);
-                    break;
-                case ITEM_ALARM:
-                    drawAlarm(false);
-                    break;
-                case ITEM_NOTIFICATIONS:
-                    drawNotifications(false);
-                    // drawCallMissed(name, num);
-                    break;
-                case ITEM_GAME:
-                    drawGame(false);
-                    break;
-                default:
-                    break;
-                }
+            case ITEM_ALARM:
+                drawAlarm(false);
+                break;
+            case ITEM_GAME:
+                drawGame(false);
+                break;
+            case ITEM_SOUND:
+                drawSoundMovil(false);
+                break;
+            default:
                 break;
             }
+            break;
         }
     }
 }
 
 void loop()
 {
+    server.handleClient();
     handleButtonPress(BUTTON_SELECT, pressSelect, selectAction);
     handleButtonPress(BUTTON_UP, pressUp, upAction);
     handleButtonPress(BUTTON_DOWN, pressDown, downAction);
@@ -343,4 +297,17 @@ void loop()
     }
 
     updateScreen();
+}
+
+void loop0(void *parameter)
+{
+    while (true)
+    {
+        if (currentScreen == SCREEN_LOAD)
+        {
+            drawLoad(true, progress);
+        }
+        // espera de 100 ms
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
 }

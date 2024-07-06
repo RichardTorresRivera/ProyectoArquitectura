@@ -9,14 +9,14 @@ NTPClient ntpClient(ntpUDP, "south-america.pool.ntp.org", -5 * 3600, 60000);
 
 // Menu e items
 char menuItems[NUM_ITEMS][MAX_ITEM_LENGTH] = {
-    {"Musica"},
-    {"Notificaciones"},
-    {"Cronometro"},
     {"Linterna"},
+    {"Musica"},
+    {"Cronometro"},
     {"Alarma"},
     {"Juego"},
+    {"Tono maximo"},
     {"Salir"}};
-const unsigned char *icons_bitmaps[NUM_ITEMS] = {image_icon_music_bits, image_icon_bell_bits, image_icon_clock_bits, image_icon_lintern_bits, image_icon_alarm_bits, image_icon_game_bits, image_icon_out_bits};
+const unsigned char *icons_bitmaps[NUM_ITEMS] = {image_icon_lintern_bits, image_icon_music_bits, image_icon_clock_bits, image_icon_alarm_bits, image_icon_game_bits, image_icon_sound_bits, image_icon_out_bits};
 
 // Fecha
 const char *daysOfTheWeek[7] = {"DOM", "LUN", "MAR", "MIE", "JUE", "VIE", "SAB"};
@@ -46,6 +46,12 @@ void initButtons()
     pinMode(BUTTON_UP, INPUT_PULLUP);
     pinMode(BUTTON_DOWN, INPUT_PULLUP);
     Serial.println("Botones incializados ...");
+}
+
+void initPines()
+{
+    pinMode(LED, OUTPUT);
+    pinMode(BUZZER, OUTPUT);
 }
 
 void initScreen()

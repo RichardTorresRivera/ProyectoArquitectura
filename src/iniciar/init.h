@@ -4,6 +4,7 @@
 void initWifi();
 void initNtpClient();
 void initButtons();
+void initPines();
 void initScreen();
 
 #endif

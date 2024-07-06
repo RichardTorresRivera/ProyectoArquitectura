@@ -24,6 +24,8 @@ void drawFrame()
     display.drawLine(6, 60, 121, 60, 1);
 }
 
+// Pantallas
+
 void drawClock(bool fullRedraw)
 {
     ntpClient.update();
@@ -118,6 +120,61 @@ void drawCallMissed(const char *contact, const char *number)
     display.display();
 }
 
+void drawNotifications(const char *msg)
+{
+    display.clearDisplay();
+    drawFrame();
+    display.setTextColor(WHITE);
+    display.setTextSize(1);
+    display.setCursor(23, 7);
+    display.print("Notificaciones");
+    display.setCursor(5, 20);
+    display.print(msg);
+    display.display();
+}
+
+void drawBattery(const char *n)
+{
+    display.clearDisplay();
+    display.setTextColor(WHITE);
+    display.setTextSize(1);
+    drawFrame();
+    display.setCursor(30, 7);
+    display.print("BATERIA BAJA");
+    display.drawBitmap(51, 25, image_battery_33_bits, 24, 16, 1);
+    display.setCursor(19, 46);
+    display.printf("Porcentaje: %s%", n);
+    display.display();
+}
+
+void drawLoad(bool fullRedraw, unsigned int &progress)
+{
+    if (fullRedraw)
+    {
+        display.clearDisplay();
+        display.setTextSize(1);
+        display.setTextColor(WHITE);
+        display.setCursor(25, 50);
+        display.print(F("Cargando ..."));
+        display.drawRect(0, 10, 128, 20, 1);
+    }
+    // Dibujar la barra de progreso
+    display.fillRect(10, 15, progress, 10, 1);
+    // Actualizar la pantalla con todo lo dibujado
+    display.display();
+    // Actualizar el progreso
+    if (progress < 108)
+    {
+        progress += 10;
+    }
+    else
+    {
+        progress = 0;
+    }
+}
+
+// Items
+
 void drawChronometer(bool fullRedraw, unsigned long elapsedTime)
 {
     if (fullRedraw)
@@ -160,22 +217,15 @@ void drawMusic(bool fullRedraw)
         display.setCursor(43, 7);
         display.print("Spotify");
         // pausa
-        display.drawBitmap(35, 40, image_icon_pausa_bits, 11, 11, 1);
-        display.drawBitmap(31, 53, str_pausa_bits, 19, 5, 1);
+        display.drawBitmap(32, 27, image_music_play_button_bits, 15, 16, 1);
+        display.drawBitmap(30, 46, str_pausa_bits, 19, 5, 1);
         // exit
-        display.drawBitmap(59, 40, image_icon_exit_bits, 11, 11, 1);
-        display.drawBitmap(55, 53, str_exit_bits, 19, 5, 1);
+        display.drawBitmap(57, 27, image_music_exit_bits, 15, 16, 1);
+        display.drawBitmap(55, 46, str_exit_bits, 19, 5, 1);
         // next
-        display.drawBitmap(83, 40, image_icon_next_bits, 11, 11, 1);
-        display.drawBitmap(79, 53, str_next_bits, 19, 5, 1);
+        display.drawBitmap(82, 27, image_music_next_bits, 15, 16, 1);
+        display.drawBitmap(80, 46, str_next_bits, 19, 5, 1);
     }
-    display.fillRect(7, 19, 114, 20, BLACK);
-    // nombre de cancion
-    display.setCursor(20, 19);
-    display.print("nombre: cancion");
-    // nombre de autor
-    display.setCursor(15, 29);
-    display.print("autor: de cancion");
     display.display();
 }
 
@@ -207,16 +257,20 @@ void drawGame(bool fullRedraw)
     display.display();
 }
 
-void drawNotifications(bool fullRedraw)
+void drawSoundMovil(bool fullRedraw)
 {
     if (fullRedraw)
     {
         display.clearDisplay();
-        drawFrame();
-        display.setTextColor(WHITE);
-        display.setTextSize(1);
-        display.setCursor(23, 7);
-        display.print("Notificaciones");
+        display.setTextColor(1);
+        display.drawRect(2, 2, 124, 60, 1);
+        display.setCursor(16, 27);
+        display.print("Se establecio el");
+        display.setCursor(14, 38);
+        display.print("tono del movil al");
+        display.setCursor(47, 48);
+        display.print("maximo");
+        display.drawBitmap(53, 7, image_volume_loud_bits, 20, 16, 1);
     }
     display.display();
 }

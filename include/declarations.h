@@ -12,9 +12,6 @@
 // Conexion a Wifi
 #include <WiFi.h>
 #include <WiFiUdp.h>
-#include <WebServer.h>
-#include <HTTPClient.h>
-#include <ArduinoJson.h>
 //  Cliente NTP
 #include <NTPClient.h>
 
@@ -29,6 +26,10 @@
 #define BUTTON_SELECT 12
 #define BUTTON_UP 13
 #define BUTTON_DOWN 14
+// Led
+#define LED 2
+// Buzzer
+#define BUZZER 4
 
 /****************************************************************
                         CONFIGURACION DE PANTALLA
@@ -62,6 +63,10 @@ extern const char *monthsOfTheYear[12];
 #define SCREEN_MENU 1
 #define SCREEN_ITEM 2
 #define SCREEN_CALL 3
+#define SCREEN_ALARM 4
+#define SCREEN_WSP 5
+#define SCREEN_BATTERY 6
+#define SCREEN_LOAD 7
 
 /****************************************************************
                        ITEMS
@@ -70,18 +75,20 @@ extern const char *monthsOfTheYear[12];
 #define ITEM_PREVIUS 0
 #define ITEM_SELECTED 1
 #define ITEM_NEXT 2
+
 // Arreglo de items
 const int NUM_ITEMS = 7;
 const int MAX_ITEM_LENGTH = 20;
 extern char menuItems[NUM_ITEMS][MAX_ITEM_LENGTH];
 extern const unsigned char *icons_bitmaps[NUM_ITEMS];
+
 // Numero de item (indice de array de menuItems)
-#define ITEM_MUSIC 0
-#define ITEM_NOTIFICATIONS 1
+#define ITEM_LINTERN 0
+#define ITEM_MUSIC 1
 #define ITEM_CHRONOMETER 2
-#define ITEM_LINTERN 3
-#define ITEM_ALARM 4
-#define ITEM_GAME 5
+#define ITEM_ALARM 3
+#define ITEM_GAME 4
+#define ITEM_SOUND 5
 #define ITEM_EXIT 6
 
 #endif
