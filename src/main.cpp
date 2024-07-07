@@ -39,6 +39,8 @@ void setup()
     Serial.begin(9600);
     initWifi();
     Serial.println("-----------------------------");
+    initFirebase();
+    Serial.println("-----------------------------");
     initNtpClient();
     Serial.println("-----------------------------");
     initButtons();

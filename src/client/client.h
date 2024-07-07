@@ -6,5 +6,7 @@
 void playPauseMusic(bool &play_pause_music);
 void nextMusic();
 void toneMaxMovil();
+void getAlarm();
+void getTask();
 
 #endif // CLIENT_H

@@ -1,6 +1,7 @@
 #include "declarations.h"
 #include "draw.h"
 #include "bitmaps.h"
+#include "client/client.h"
 
 void drawCruz(int x, int y)
 {
@@ -240,6 +241,7 @@ void drawAlarm(bool fullRedraw)
         display.setCursor(43, 7);
         display.print("Alarma");
     }
+    getTask();
     display.display();
 }
 

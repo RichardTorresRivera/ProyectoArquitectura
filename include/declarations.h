@@ -14,6 +14,10 @@
 #include <WiFiUdp.h>
 //  Cliente NTP
 #include <NTPClient.h>
+// Firebase
+#include <FirebaseESP32.h>
+//Json
+#include <ArduinoJson.h>
 
 /****************************************************************
                        PINES DE HARDWARE
@@ -90,5 +94,16 @@ extern const unsigned char *icons_bitmaps[NUM_ITEMS];
 #define ITEM_GAME 4
 #define ITEM_SOUND 5
 #define ITEM_EXIT 6
+
+/****************************************************************
+                       CONFIGURACION DE FIREBASE
+****************************************************************/
+#define FIREBASE_HOST "https://smart-13c8c-default-rtdb.firebaseio.com/"
+#define FIREBASE_AUTH "bg61NYKSEj2R6fmOgmZtFCHysEvdD5nlHlf7Fims"
+
+// Crear instancias de Firebase y FirebaseData
+extern FirebaseData firebaseData;
+extern FirebaseAuth auth;
+extern FirebaseConfig config;
 
 #endif

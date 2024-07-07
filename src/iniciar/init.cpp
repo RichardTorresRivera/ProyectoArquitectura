@@ -7,6 +7,11 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 WiFiUDP ntpUDP;
 NTPClient ntpClient(ntpUDP, "south-america.pool.ntp.org", -5 * 3600, 60000);
 
+// Instancias de Firebase
+FirebaseData firebaseData;
+FirebaseAuth auth;
+FirebaseConfig config;
+
 // Menu e items
 char menuItems[NUM_ITEMS][MAX_ITEM_LENGTH] = {
     {"Linterna"},
@@ -22,9 +27,30 @@ const unsigned char *icons_bitmaps[NUM_ITEMS] = {image_icon_lintern_bits, image_
 const char *daysOfTheWeek[7] = {"DOM", "LUN", "MAR", "MIE", "JUE", "VIE", "SAB"};
 const char *monthsOfTheYear[12] = {"ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"};
 
+void initFirebase()
+{
+    // Configurar Firebase
+    config.host = FIREBASE_HOST;
+    config.signer.tokens.legacy_token = FIREBASE_AUTH;
+
+    // Inicializar Firebase
+    Firebase.begin(&config, &auth);
+    Firebase.reconnectWiFi(true);
+
+    // Verificar la conexión
+    if (Firebase.ready())
+    {
+        Serial.println("Connected to Firebase");
+    }
+    else
+    {
+        Serial.println("Failed to connect to Firebase");
+    }
+}
+
 void initWifi()
 {
-    WiFi.begin(WIFI_SSID, WIFI_PASS, 6);
+    WiFi.begin("Wokwi-GUEST", "", 6);
     while (WiFi.status() != WL_CONNECTED)
     {
         delay(1000);
