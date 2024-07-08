@@ -7,5 +7,6 @@
 void startPauseChronometer(bool &run, unsigned long &start, unsigned long &elapsed);
 void exitChronometer(bool &run, unsigned long &start, unsigned long &elapsed);
 void resetChronometer(bool &run, unsigned long &start, unsigned long &elapsed);
+void onOffLintern(bool &onLintern);
 
 #endif

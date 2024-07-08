@@ -2,6 +2,7 @@
 #define INIT_H
 
 void initWifi();
+void initFirebase();
 void initNtpClient();
 void initButtons();
 void initPines();

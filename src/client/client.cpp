@@ -53,8 +53,63 @@ void nextMusic()
     sendIFTTTRequest("spotify_next");
 }
 
-void toneMaxMovil()
+void toneMovil(short n)
 {
-    Serial.println("tono del movil al maximo");
-    sendIFTTTRequest("cell_tone");
+    char msg[10];
+    sprintf(msg, "cell_tone%d", n);
+    sendIFTTTRequest(msg);
+}
+
+AlarmTime getAlarm()
+{
+    AlarmTime alarmTime;
+    // Leer los datos de Firebase
+    if (Firebase.ready())
+    {
+        if (Firebase.getString(firebaseData, "proxAlarm/nextAlarm/hour"))
+        {
+            alarmTime.hour = firebaseData.stringData();
+        }
+        if (Firebase.getString(firebaseData, "proxAlarm/nextAlarm/minute"))
+        {
+            alarmTime.minute = firebaseData.stringData();
+        }
+    }
+    return alarmTime;
+}
+
+Task getTask()
+{
+    Task taskInfo;
+    // Leer los datos de Firebase
+    if (Firebase.ready())
+    {
+        // Leer la fecha de vencimiento (dueDate)
+        if (Firebase.getString(firebaseData, "proxTask/next/tasks/0/dueDate"))
+        {
+            taskInfo.dueDate = firebaseData.stringData().substring(0, 10); // Guardar solo la parte de la fecha
+        }
+
+        int i = 0;
+        while (true)
+        {
+            String taskPath = "proxTask/next/tasks/" + String(i) + "/task";
+            String task;
+            if (Firebase.getString(firebaseData, taskPath))
+            {
+                task = firebaseData.stringData();
+                taskInfo.tasks.push_back(task); // Agregar la tarea a la lista
+                i++;
+            }
+            else
+            {
+                break; // Salir del bucle si no se puede leer la tarea
+            }
+        }
+    }
+    else
+    {
+        Serial.println("Firebase no está listo");
+    }
+    return taskInfo;
 }

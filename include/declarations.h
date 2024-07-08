@@ -14,6 +14,10 @@
 #include <WiFiUdp.h>
 //  Cliente NTP
 #include <NTPClient.h>
+// Firebase
+#include <FirebaseESP32.h>
+// Vectores
+#include <vector>
 
 /****************************************************************
                        PINES DE HARDWARE
@@ -46,8 +50,23 @@ extern WiFiUDP ntpUDP;
 extern NTPClient ntpClient;
 
 /****************************************************************
-                       CONFIGURACION DE TELEGRAM
+                       CONFIGURACION DE FIREBASE
 ****************************************************************/
+extern FirebaseData firebaseData;
+extern FirebaseAuth auth;
+extern FirebaseConfig config;
+
+struct AlarmTime
+{
+    String hour;
+    String minute;
+};
+
+struct Task
+{
+    String dueDate;
+    std::vector<String> tasks;
+};
 
 /****************************************************************
                        CONFIGURACION DE FECHAS
@@ -66,7 +85,8 @@ extern const char *monthsOfTheYear[12];
 #define SCREEN_ALARM 4
 #define SCREEN_WSP 5
 #define SCREEN_BATTERY 6
-#define SCREEN_LOAD 7
+#define SCREEN_MENU_SOUND 7
+#define SCREEN_LOAD 8
 
 /****************************************************************
                        ITEMS
@@ -82,13 +102,26 @@ const int MAX_ITEM_LENGTH = 20;
 extern char menuItems[NUM_ITEMS][MAX_ITEM_LENGTH];
 extern const unsigned char *icons_bitmaps[NUM_ITEMS];
 
-// Numero de item (indice de array de menuItems)
+/****************************************************************
+                       MENU DE ITEMS
+****************************************************************/
 #define ITEM_LINTERN 0
 #define ITEM_MUSIC 1
 #define ITEM_CHRONOMETER 2
 #define ITEM_ALARM 3
-#define ITEM_GAME 4
+#define ITEM_TASK 4
 #define ITEM_SOUND 5
 #define ITEM_EXIT 6
+
+/****************************************************************
+                       MENU DE SONIDO
+****************************************************************/
+#define SOUND_0 0
+#define SOUND_50 1
+#define SOUND_100 2
+#define SOUND_EXIT 3
+
+extern char menuSounds[4][MAX_ITEM_LENGTH];
+extern const unsigned char *icons_sound[4];
 
 #endif

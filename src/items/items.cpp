@@ -1,4 +1,5 @@
 #include "items.h"
+#include "declarations.h"
 
 void startPauseChronometer(bool &run, unsigned long &start, unsigned long &elapsed)
 {
@@ -22,4 +23,19 @@ void resetChronometer(bool &run, unsigned long &start, unsigned long &elapsed)
     elapsed = 0;
     run = false;
     start = millis();
+}
+
+void onOffLintern(bool &onLintern)
+{
+    onLintern = !onLintern;
+    if (onLintern)
+    {
+        Serial.println("Encendiendo linterna");
+        digitalWrite(LED, HIGH);
+    }
+    else
+    {
+        Serial.println("Apagando linterna");
+        digitalWrite(LED, LOW);
+    }
 }
