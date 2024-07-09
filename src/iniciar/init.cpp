@@ -47,7 +47,6 @@ const unsigned char *icons_sound[4] = {
 const char *daysOfTheWeek[7] = {"DOM", "LUN", "MAR", "MIE", "JUE", "VIE", "SAB"};
 const char *monthsOfTheYear[12] = {"ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"};
 
-
 void initWifi()
 {
     WiFi.begin(WIFI_SSID, WIFI_PASS, 6);
