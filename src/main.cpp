@@ -5,6 +5,9 @@
 #include "items/items.h"
 #include "client/client.h"
 
+//AlarmaActiva
+bool alarmActivated = false;
+
 // Tarea del nucleo 0
 TaskHandle_t Load;
 void loop0(void *parameter);
@@ -327,6 +330,15 @@ void loop()
     {
         elapsedTime = millis() - startTime;
     }
+
+    /*
+    Así funcionaría como ejemplo
+
+    if (isAlarmTime(ntpClient, alarmActivated))
+    {
+        Serial.println("Alarma activada");
+        playNotificationTone();
+    }*/
 
     updateScreen();
 }

@@ -60,6 +60,46 @@ void toneMovil(short n)
     sendIFTTTRequest(msg);
 }
 
+bool isAlarmTime(NTPClient ntpClient, bool &alarmActivated)
+{
+    static String previousTime = "";
+    ntpClient.update();
+    String currentTime = ntpClient.getFormattedTime();
+    AlarmTime alarmTime1;
+
+    // Extraer datos de Firebase
+    if (Firebase.getString(firebaseData, "proxAlarm/nextAlarm/hour"))
+    {
+        alarmTime1.hour = firebaseData.stringData();
+    }
+    if (Firebase.getString(firebaseData, "proxAlarm/nextAlarm/minute"))
+    {
+        alarmTime1.minute = firebaseData.stringData();
+    }
+
+    // Extraer horas y minutos de currentTime
+    int currentHour = currentTime.substring(0, 2).toInt();
+    int currentMinute = currentTime.substring(3, 5).toInt();
+
+    // Extraer horas y minutos de alarmTime
+    int alarmHour = alarmTime1.hour.toInt();
+    int alarmMinute = alarmTime1.minute.toInt();
+
+    // Comparar tiempos
+    bool isAlarmNow = (currentHour == alarmHour && currentMinute == alarmMinute);
+    if (isAlarmNow && !alarmActivated)
+    {
+        alarmActivated = true; // Activar la alarma
+        previousTime = currentTime; // Actualizar el tiempo anterior
+        return true; // Indicar que es hora de la alarma
+    }
+    else if (!isAlarmNow)
+    {
+        alarmActivated = false; // Reiniciar el estado de la alarma
+    }
+    return false; // No es hora de la alarma
+}
+
 AlarmTime getAlarm()
 {
     AlarmTime alarmTime;
