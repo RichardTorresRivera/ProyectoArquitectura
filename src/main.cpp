@@ -14,6 +14,7 @@ byte currentScreen = SCREEN_CLOCK;
 byte previusScreen = SCREEN_LOAD;
 // Items
 int items[] = {ITEM_LINTERN, ITEM_MUSIC, ITEM_CHRONOMETER};
+int items_sound[] = {SOUND_0, SOUND_50, SOUND_100};
 
 // Botones
 bool pressSelect = false;
@@ -33,6 +34,10 @@ bool linter_on = false;
 
 // Progreso
 unsigned int progress = 0;
+
+// Alarma
+AlarmTime alarma;
+Task tasks;
 
 void setup()
 {
@@ -75,32 +80,42 @@ void selectAction()
     }
     else if (currentScreen == SCREEN_MENU)
     {
-        if (items[ITEM_SELECTED] == ITEM_EXIT)
+        switch (items[ITEM_SELECTED])
         {
+        case ITEM_EXIT:
             currentScreen = SCREEN_CLOCK;
-        }
-        else if (items[ITEM_SELECTED] == ITEM_LINTERN)
-        {
-            linter_on = !linter_on;
-            if (linter_on)
-            {
-                Serial.println("Encendiendo linterna");
-                digitalWrite(LED, HIGH);
-            }
-            else
-            {
-                Serial.println("Apagando linterna");
-                digitalWrite(LED, LOW);
-            }
-        }
-        else if (items[ITEM_SELECTED] == ITEM_SOUND)
-        {
+            break;
+        case ITEM_LINTERN:
+            onOffLintern(linter_on);
+            break;
+        case ITEM_SOUND:
+            currentScreen = SCREEN_MENU_SOUND;
+            break;
+        case ITEM_ALARM:
             currentScreen = SCREEN_LOAD;
-            toneMaxMovil();
+            alarma = getAlarm();
             currentScreen = SCREEN_ITEM;
+            break;
+        case ITEM_TASK:
+            currentScreen = SCREEN_LOAD;
+            tasks = getTask();
+            currentScreen = SCREEN_ITEM;
+            break;
+        default:
+            currentScreen = SCREEN_ITEM;
+            break;
+        }
+    }
+    else if (currentScreen == SCREEN_MENU_SOUND)
+    {
+        if (items_sound[ITEM_SELECTED] == SOUND_EXIT)
+        {
+            currentScreen = SCREEN_MENU;
         }
         else
         {
+            currentScreen = SCREEN_LOAD;
+            toneMovil(items_sound[ITEM_SELECTED]);
             currentScreen = SCREEN_ITEM;
         }
     }
@@ -113,29 +128,12 @@ void selectAction()
             exitChronometer(runningChronometer, startTime, elapsedTime);
             currentScreen = SCREEN_MENU;
             break;
-        case ITEM_MUSIC:
-            // exit
-            Serial.println("Saliendo de musica");
-            currentScreen = SCREEN_MENU;
-            break;
-        case ITEM_ALARM:
-            // exit
-            Serial.println("Saliendo de alarma");
-            currentScreen = SCREEN_MENU;
-            break;
-        case ITEM_GAME:
-            // exit
-            Serial.println("Saliendo de juego");
-            currentScreen = SCREEN_MENU;
-            break;
-        case ITEM_SOUND:
-            currentScreen = SCREEN_MENU;
-            break;
         default:
+            currentScreen = SCREEN_MENU;
             break;
         }
     }
-    else if (currentScreen == SCREEN_CALL)
+    else if (currentScreen == SCREEN_CALL || currentScreen == SCREEN_BATTERY || currentScreen == SCREEN_WSP)
     {
         currentScreen = SCREEN_CLOCK;
     }
@@ -150,6 +148,14 @@ void upAction()
         if (items[ITEM_SELECTED] < 0)
         {
             items[ITEM_SELECTED] = NUM_ITEMS - 1;
+        }
+    }
+    else if (currentScreen == SCREEN_MENU_SOUND)
+    {
+        items_sound[ITEM_SELECTED]--;
+        if (items_sound[ITEM_SELECTED] < 0)
+        {
+            items_sound[ITEM_SELECTED] = 3;
         }
     }
     else if (currentScreen == SCREEN_ITEM)
@@ -177,6 +183,14 @@ void downAction()
         if (items[ITEM_SELECTED] >= NUM_ITEMS)
         {
             items[ITEM_SELECTED] = 0;
+        }
+    }
+    else if (currentScreen == SCREEN_MENU_SOUND)
+    {
+        items_sound[ITEM_SELECTED]++;
+        if (items_sound[ITEM_SELECTED] >= 4)
+        {
+            items_sound[ITEM_SELECTED] = 0;
         }
     }
     else if (currentScreen == SCREEN_ITEM)
@@ -215,6 +229,9 @@ void updateScreen()
             }
             drawMenu(true, items);
             break;
+        case SCREEN_MENU_SOUND:
+            drawMenuSound(true, items_sound);
+            break;
         case SCREEN_ITEM:
             switch (items[ITEM_SELECTED])
             {
@@ -225,13 +242,13 @@ void updateScreen()
                 drawMusic(true);
                 break;
             case ITEM_ALARM:
-                drawAlarm(true);
+                drawAlarm(true, alarma.hour, alarma.minute);
                 break;
-            case ITEM_GAME:
-                drawGame(true);
+            case ITEM_TASK:
+                drawTask(true, tasks.dueDate, tasks.tasks);
                 break;
             case ITEM_SOUND:
-                drawSoundMovil(true);
+                drawSoundMovil(true, items_sound[ITEM_SELECTED]);
                 break;
             default:
                 break;
@@ -260,6 +277,19 @@ void updateScreen()
             }
             drawMenu(false, items);
             break;
+        case SCREEN_MENU_SOUND:
+            items_sound[ITEM_PREVIUS] = items_sound[ITEM_SELECTED] - 1;
+            if (items_sound[ITEM_PREVIUS] < 0)
+            {
+                items_sound[ITEM_PREVIUS] = 3;
+            }
+            items_sound[ITEM_NEXT] = items_sound[ITEM_SELECTED] + 1;
+            if (items_sound[ITEM_NEXT] >= 4)
+            {
+                items_sound[ITEM_NEXT] = 0;
+            }
+            drawMenuSound(false, items_sound);
+            break;
         case SCREEN_ITEM:
             switch (items[ITEM_SELECTED])
             {
@@ -270,13 +300,13 @@ void updateScreen()
                 drawMusic(false);
                 break;
             case ITEM_ALARM:
-                drawAlarm(false);
+                drawAlarm(false, alarma.hour, alarma.minute);
                 break;
-            case ITEM_GAME:
-                drawGame(false);
+            case ITEM_TASK:
+                drawTask(false, tasks.dueDate, tasks.tasks);
                 break;
             case ITEM_SOUND:
-                drawSoundMovil(false);
+                drawSoundMovil(false, items_sound[ITEM_SELECTED]);
                 break;
             default:
                 break;

@@ -1,7 +1,6 @@
 #include "declarations.h"
 #include "draw.h"
 #include "bitmaps.h"
-#include "client/client.h"
 
 void drawCruz(int x, int y)
 {
@@ -121,20 +120,27 @@ void drawCallMissed(const char *contact, const char *number)
     display.display();
 }
 
-void drawNotifications(const char *msg)
+void drawNotifications(const char *app, const char *msg)
 {
     display.clearDisplay();
-    drawFrame();
     display.setTextColor(WHITE);
     display.setTextSize(1);
-    display.setCursor(23, 7);
-    display.print("Notificaciones");
-    display.setCursor(5, 20);
+
+    // Título "Notificaciones" centrado
+    int16_t x1, y1;
+    uint16_t w, h;
+    display.getTextBounds(app, 0, 0, &x1, &y1, &w, &h);
+    int16_t centeredX = (SCREEN_WIDTH - w) / 2;
+    display.setCursor(centeredX, 7);
+    display.print(app);
+
+    display.setCursor(0, 20);
     display.print(msg);
+
     display.display();
 }
 
-void drawBattery(const char *n)
+void drawBatteryLow(const char *n)
 {
     display.clearDisplay();
     display.setTextColor(WHITE);
@@ -144,7 +150,7 @@ void drawBattery(const char *n)
     display.print("BATERIA BAJA");
     display.drawBitmap(51, 25, image_battery_33_bits, 24, 16, 1);
     display.setCursor(19, 46);
-    display.printf("Porcentaje: %s%", n);
+    display.printf("Porcentaje: %s%%", n);
     display.display();
 }
 
@@ -230,7 +236,7 @@ void drawMusic(bool fullRedraw)
     display.display();
 }
 
-void drawAlarm(bool fullRedraw)
+void drawAlarm(bool fullRedraw, const String &hour, const String &minute)
 {
     if (fullRedraw)
     {
@@ -241,11 +247,16 @@ void drawAlarm(bool fullRedraw)
         display.setCursor(43, 7);
         display.print("Alarma");
     }
-    getTask();
+
+    // Mostrar la hora y minutos de la alarma
+    display.setTextSize(2);
+    display.setCursor(38, 27);
+    display.printf("%02d:%02d", hour.toInt(), minute.toInt());
+
     display.display();
 }
 
-void drawGame(bool fullRedraw)
+void drawTask(bool fullRedraw, const String &dueDate, const std::vector<String> &tasks)
 {
     if (fullRedraw)
     {
@@ -253,13 +264,61 @@ void drawGame(bool fullRedraw)
         drawFrame();
         display.setTextColor(WHITE);
         display.setTextSize(1);
-        display.setCursor(43, 7);
-        display.print("Juego");
+        display.setCursor(42, 7);
+        display.print("Tareas");
     }
+
+    // Mostrar la fecha de vencimiento
+    display.setCursor(10, 20);
+    display.print("Fecha: " + dueDate);
+
+    // Mostrar las tareas
+    int y = 30;
+    for (const auto &task : tasks)
+    {
+        display.setCursor(10, y);
+        display.print(task);
+        y += 10; // Incrementar la coordenada Y para la siguiente tarea
+    }
+
     display.display();
 }
 
-void drawSoundMovil(bool fullRedraw)
+void drawMenuSound(bool fullRedraw, int items[])
+{
+    if (fullRedraw)
+    {
+        display.clearDisplay();
+        display.setTextColor(WHITE);
+        display.setTextSize(1);
+        display.drawRoundRect(2, 2, 119, 18, 2, 1);
+        display.drawRoundRect(2, 22, 119, 20, 2, 1);
+        display.drawRect(3, 23, 117, 18, 1);
+        display.drawRoundRect(2, 44, 119, 18, 2, 1);
+    }
+    // dibujar barra
+    display.fillRect(123, 0, 3, 64, BLACK);
+    display.drawLine(124, 2, 124, 61, 1);
+    display.drawRect(123, 64 / 4 * items[0] + 1, 3, 64 / 4, 1);
+    // dibujar item previo
+    display.fillRect(4, 4, 114, 15, BLACK);
+    display.drawBitmap(6, 5, icons_sound[items[0]], 17, 12, 1);
+    display.setCursor(27, 7);
+    display.print(menuSounds[items[0]]);
+    // dibujar item seleccionado
+    display.fillRect(4, 24, 114, 16, BLACK);
+    display.drawBitmap(6, 26, icons_sound[items[1]], 17, 12, 1);
+    display.setCursor(27, 28);
+    display.print(menuSounds[items[1]]);
+    // dibujar item posterior
+    display.fillRect(4, 46, 114, 15, BLACK);
+    display.drawBitmap(6, 47, icons_sound[items[2]], 17, 12, 1);
+    display.setCursor(27, 49);
+    display.print(menuSounds[items[2]]);
+    display.display();
+}
+
+void drawSoundMovil(bool fullRedraw, short n)
 {
     if (fullRedraw)
     {
@@ -270,8 +329,10 @@ void drawSoundMovil(bool fullRedraw)
         display.print("Se establecio el");
         display.setCursor(14, 38);
         display.print("tono del movil al");
-        display.setCursor(47, 48);
-        display.print("maximo");
+        display.setCursor(54, 48);
+        char msg[4];
+        sprintf(msg, "%0d%%", n * 50);
+        display.print(msg);
         display.drawBitmap(53, 7, image_volume_loud_bits, 20, 16, 1);
     }
     display.display();
