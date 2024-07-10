@@ -41,7 +41,7 @@ void handleMissedCall(byte &current)
             current = SCREEN_CALL;
 
             // Mostrar el mensaje en la pantalla OLED
-            drawCallMissed(contact.c_str(), number.c_str());
+            drawCallMissed(contact, number);
             playNotificationTone();
 
             Serial.println("Contact: " + contact);
@@ -70,7 +70,7 @@ void handleBatteryLow(byte &current)
         current = SCREEN_BATTERY;
 
         // Mostrar el mensaje en la pantalla OLED
-        drawBatteryLow(batteryLevel.c_str());
+        drawBatteryLow(batteryLevel);
         playNotificationTone();
 
         Serial.println("Battery Level: " + batteryLevel);
@@ -100,7 +100,7 @@ void handleMsgWsp(byte &current)
                 // Cambiar la pantalla actual a la pantalla de llamadas perdidas
                 current = SCREEN_WSP;
                 // Mostrar el mensaje en la pantalla OLED
-                drawNotifications(app.c_str(), msg.c_str());
+                drawNotifications(app, msg);
                 playNotificationTone();
             }
             Serial.println("App: " + app);

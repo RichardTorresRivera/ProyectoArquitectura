@@ -82,6 +82,38 @@ AlarmTime getAlarm()
     return alarmTime;
 }
 
+bool isAlarmTime(NTPClient ntpClient, AlarmTime alarmTime, bool &alarmActivated)
+{
+    if (alarmTime.hour.isEmpty() || alarmTime.minute.isEmpty())
+    {
+        return false;
+    }
+    static String previousTime = "";
+    ntpClient.update();
+    String currentTime = ntpClient.getFormattedTime();
+    // Extraer horas y minutos de currentTime
+    int currentHour = currentTime.substring(0, 2).toInt();
+    int currentMinute = currentTime.substring(3, 5).toInt();
+
+    // Extraer horas y minutos de alarmTime
+    int alarmHour = alarmTime.hour.toInt();
+    int alarmMinute = alarmTime.minute.toInt();
+
+    // Comparar tiempos
+    bool isAlarmNow = (currentHour == alarmHour && currentMinute == alarmMinute);
+    if (isAlarmNow && !alarmActivated)
+    {
+        alarmActivated = true;      // Activar la alarma
+        previousTime = currentTime; // Actualizar el tiempo anterior
+        return true;                // Indicar que es hora de la alarma
+    }
+    else if (!isAlarmNow)
+    {
+        alarmActivated = false; // Reiniciar el estado de la alarma
+    }
+    return false; // No es hora de la alarma
+}
+
 Task getTask()
 {
     Task taskInfo;
