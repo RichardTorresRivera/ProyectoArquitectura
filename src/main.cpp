@@ -7,7 +7,9 @@
 
 // Tarea del nucleo 0
 TaskHandle_t Load;
+TaskHandle_t Alarm;
 void loop0(void *parameter);
+void loop1(void *parameter);
 
 // Manejo de pantallas
 byte currentScreen = SCREEN_CLOCK;
@@ -33,11 +35,12 @@ bool play_pause_music = true;
 bool linter_on = false;
 
 // Progreso
-unsigned int progress = 0;
+unsigned short progress = 0;
 
 // Alarma
 AlarmTime alarma;
 Task tasks;
+bool alarmActivated = false;
 
 void setup()
 {
@@ -55,7 +58,8 @@ void setup()
     initScreen();
     Serial.println("-----------------------------");
     initServer(currentScreen);
-    xTaskCreatePinnedToCore(loop0, "Load", 10000, NULL, 1, &Load, 0);
+    xTaskCreatePinnedToCore(loop0, "Load", 7000, NULL, 2, &Load, 0);
+    xTaskCreatePinnedToCore(loop1, "Alarm", 7000, NULL, 2, &Alarm, 0);
 }
 
 void handleButtonPress(int button, bool &pressFlag, void (*action)())
@@ -95,11 +99,13 @@ void selectAction()
             currentScreen = SCREEN_LOAD;
             alarma = getAlarm();
             currentScreen = SCREEN_ITEM;
+            progress = 0;
             break;
         case ITEM_TASK:
             currentScreen = SCREEN_LOAD;
             tasks = getTask();
             currentScreen = SCREEN_ITEM;
+            progress = 0;
             break;
         default:
             currentScreen = SCREEN_ITEM;
@@ -117,6 +123,7 @@ void selectAction()
             currentScreen = SCREEN_LOAD;
             toneMovil(items_sound[ITEM_SELECTED]);
             currentScreen = SCREEN_ITEM;
+            progress = 0;
         }
     }
     else if (currentScreen == SCREEN_ITEM)
@@ -133,8 +140,10 @@ void selectAction()
             break;
         }
     }
-    else if (currentScreen == SCREEN_CALL || currentScreen == SCREEN_BATTERY || currentScreen == SCREEN_WSP)
+    else if (currentScreen == SCREEN_CALL || currentScreen == SCREEN_BATTERY || currentScreen == SCREEN_WSP || currentScreen == SCREEN_ALARM)
     {
+        noTone(BUZZER);
+        alarmActivated = false;
         currentScreen = SCREEN_CLOCK;
     }
 }
@@ -219,6 +228,10 @@ void updateScreen()
         case SCREEN_CLOCK:
             drawClock(true);
             break;
+        case SCREEN_ALARM:
+            Serial.println("Alarma activada");
+            drawAlarm(true, alarma.hour, alarma.minute);
+            break;
         case SCREEN_MENU:
             if (previusScreen != SCREEN_ITEM)
             {
@@ -236,7 +249,8 @@ void updateScreen()
             switch (items[ITEM_SELECTED])
             {
             case ITEM_CHRONOMETER:
-                drawChronometer(true, elapsedTime);
+                // drawChronometer(true, elapsedTime);
+                drawNotifications("Whats", "lorem ipsum y no se que mas, por que la vida es bella y bella es la vida");
                 break;
             case ITEM_MUSIC:
                 drawMusic(true);
@@ -263,6 +277,9 @@ void updateScreen()
         {
         case SCREEN_CLOCK:
             drawClock(false);
+            break;
+        case SCREEN_ALARM:
+            drawAlarm(false, alarma.hour, alarma.minute);
             break;
         case SCREEN_MENU:
             items[ITEM_PREVIUS] = items[ITEM_SELECTED] - 1;
@@ -294,7 +311,8 @@ void updateScreen()
             switch (items[ITEM_SELECTED])
             {
             case ITEM_CHRONOMETER:
-                drawChronometer(false, elapsedTime);
+                // drawChronometer(false, elapsedTime);
+                drawNotifications("Whats", "lorem ipsum y no se que mas, por que la vida es bella y bella es la vida");
                 break;
             case ITEM_MUSIC:
                 drawMusic(false);
@@ -327,6 +345,13 @@ void loop()
     {
         elapsedTime = millis() - startTime;
     }
+    if (alarmActivated)
+    {
+        tone(BUZZER, 1200);
+        delay(500);
+        tone(BUZZER, 800);
+        delay(500);
+    }
 
     updateScreen();
 }
@@ -340,6 +365,18 @@ void loop0(void *parameter)
             drawLoad(true, progress);
         }
         // espera de 100 ms
-        vTaskDelay(100 / portTICK_PERIOD_MS);
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+    }
+}
+
+void loop1(void *parameter)
+{
+    vTaskDelay(60000 / portTICK_PERIOD_MS);
+    while (true)
+    {
+        if (isAlarmTime(ntpClient, alarma, alarmActivated))
+        {
+            currentScreen = SCREEN_ALARM;
+        }
     }
 }

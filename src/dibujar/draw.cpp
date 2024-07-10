@@ -2,6 +2,58 @@
 #include "draw.h"
 #include "bitmaps.h"
 
+int getTextWidth(String text)
+{
+    int16_t x1, y1;
+    uint16_t w, h;
+    display.getTextBounds(text, 0, 0, &x1, &y1, &w, &h);
+    return w;
+}
+
+void displayTextWrapped(String text, int x, int y, int maxWidth)
+{
+    int cursorX = x;
+    int cursorY = y;
+
+    // Separa el texto en palabras
+    int start = 0;
+    int end = text.indexOf(' ', start);
+
+    while (end != -1)
+    {
+        String word = text.substring(start, end + 1);
+        int wordWidth = display.width() - cursorX;
+        int wordWidthPixels = getTextWidth(word);
+
+        if (wordWidthPixels > wordWidth)
+        {
+            // Si la palabra no cabe, mover a la siguiente línea
+            cursorX = x;
+            cursorY += 10; // Desplazamiento en Y (altura de la línea) puede necesitar ajuste
+        }
+
+        if (cursorY > 50)
+        {
+            display.setCursor(10, cursorY);
+            display.print("Continua ...");
+            return;
+        }
+        // Dibujar la palabra
+        display.setCursor(cursorX, cursorY);
+        display.print(word);
+        cursorX += wordWidthPixels;
+
+        // Ir a la siguiente palabra
+        start = end + 1;
+        end = text.indexOf(' ', start);
+    }
+
+    // Imprimir la última palabra
+    String lastWord = text.substring(start);
+    display.setCursor(cursorX, cursorY);
+    display.print(lastWord);
+}
+
 void drawCruz(int x, int y)
 {
     display.drawBitmap(x, y, image_cruz_bits, 3, 3, 1);
@@ -98,7 +150,7 @@ void drawMenu(bool fullRedraw, int items[])
     display.display();
 }
 
-void drawCallMissed(const char *contact, const char *number)
+void drawCallMissed(const String contact, const String number)
 {
     display.clearDisplay();
     display.setTextColor(WHITE);
@@ -120,13 +172,13 @@ void drawCallMissed(const char *contact, const char *number)
     display.display();
 }
 
-void drawNotifications(const char *app, const char *msg)
+void drawNotifications(const String app, const String msg)
 {
     display.clearDisplay();
     display.setTextColor(WHITE);
     display.setTextSize(1);
+    drawFrame();
 
-    // Título "Notificaciones" centrado
     int16_t x1, y1;
     uint16_t w, h;
     display.getTextBounds(app, 0, 0, &x1, &y1, &w, &h);
@@ -134,13 +186,12 @@ void drawNotifications(const char *app, const char *msg)
     display.setCursor(centeredX, 7);
     display.print(app);
 
-    display.setCursor(0, 20);
-    display.print(msg);
+    displayTextWrapped(msg, 10, 25, 18);
 
     display.display();
 }
 
-void drawBatteryLow(const char *n)
+void drawBatteryLow(const String n)
 {
     display.clearDisplay();
     display.setTextColor(WHITE);
@@ -154,7 +205,7 @@ void drawBatteryLow(const char *n)
     display.display();
 }
 
-void drawLoad(bool fullRedraw, unsigned int &progress)
+void drawLoad(bool fullRedraw, unsigned short &progress)
 {
     if (fullRedraw)
     {
@@ -236,7 +287,7 @@ void drawMusic(bool fullRedraw)
     display.display();
 }
 
-void drawAlarm(bool fullRedraw, const String &hour, const String &minute)
+void drawAlarm(bool fullRedraw, const String hour, const String minute)
 {
     if (fullRedraw)
     {
@@ -246,17 +297,28 @@ void drawAlarm(bool fullRedraw, const String &hour, const String &minute)
         display.setTextSize(1);
         display.setCursor(43, 7);
         display.print("Alarma");
+        // Verificar si hour y minute son cadenas vacías
+        if (hour.isEmpty() || minute.isEmpty())
+        {
+            display.setTextSize(1);
+            display.setCursor(10, 25);
+            display.print("No tienes una");
+            display.setCursor(10, 35);
+            display.print("alarma definida");
+        }
+        else
+        {
+            // Mostrar la hora y minutos de la alarma
+            display.setTextSize(2);
+            display.setCursor(38, 27);
+            display.printf("%02d:%02d", hour.toInt(), minute.toInt());
+        }
     }
-
-    // Mostrar la hora y minutos de la alarma
-    display.setTextSize(2);
-    display.setCursor(38, 27);
-    display.printf("%02d:%02d", hour.toInt(), minute.toInt());
 
     display.display();
 }
 
-void drawTask(bool fullRedraw, const String &dueDate, const std::vector<String> &tasks)
+void drawTask(bool fullRedraw, const String dueDate, const std::vector<String> tasks)
 {
     if (fullRedraw)
     {
@@ -266,21 +328,29 @@ void drawTask(bool fullRedraw, const String &dueDate, const std::vector<String> 
         display.setTextSize(1);
         display.setCursor(42, 7);
         display.print("Tareas");
+        // Verificar si el vector de tareas está vacío
+        if (tasks.empty())
+        {
+            display.setCursor(10, 25);
+            display.print("No hay tareas");
+            display.setCursor(10, 35);
+            display.print("asignadas");
+        }
+        else
+        {
+            // Mostrar la fecha de vencimiento
+            display.setCursor(10, 25);
+            display.print("Fecha: " + dueDate);
+            // Mostrar las tareas
+            int y = 35;
+            for (const auto &task : tasks)
+            {
+                display.setCursor(10, y);
+                display.print(task);
+                y += 10; // Incrementar la coordenada Y para la siguiente tarea
+            }
+        }
     }
-
-    // Mostrar la fecha de vencimiento
-    display.setCursor(10, 20);
-    display.print("Fecha: " + dueDate);
-
-    // Mostrar las tareas
-    int y = 30;
-    for (const auto &task : tasks)
-    {
-        display.setCursor(10, y);
-        display.print(task);
-        y += 10; // Incrementar la coordenada Y para la siguiente tarea
-    }
-
     display.display();
 }
 
