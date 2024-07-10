@@ -236,7 +236,7 @@ void drawMusic(bool fullRedraw)
     display.display();
 }
 
-void drawAlarm(bool fullRedraw, const String &hour, const String &minute)
+void drawAlarm(bool fullRedraw, const String &hour, const String &minute, const String &day)
 {
     if (fullRedraw)
     {
@@ -248,6 +248,11 @@ void drawAlarm(bool fullRedraw, const String &hour, const String &minute)
         display.print("Alarma");
     }
 
+    // Mostrar el día de la alarma
+    display.setTextSize(1);
+    display.setCursor(38, 17); // Ajusta la posición del día
+    display.print(day);
+    
     // Mostrar la hora y minutos de la alarma
     display.setTextSize(2);
     display.setCursor(38, 27);
