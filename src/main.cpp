@@ -256,7 +256,7 @@ void updateScreen()
                 drawMusic(true);
                 break;
             case ITEM_ALARM:
-                drawAlarm(true, alarma.hour, alarma.minute);
+                drawAlarm(true, alarma.hour, alarma.minute, alarma.day);
                 break;
             case ITEM_TASK:
                 drawTask(true, tasks.dueDate, tasks.tasks);
@@ -318,7 +318,7 @@ void updateScreen()
                 drawMusic(false);
                 break;
             case ITEM_ALARM:
-                drawAlarm(false, alarma.hour, alarma.minute);
+                drawAlarm(false, alarma.hour, alarma.minute, alarma.day);
                 break;
             case ITEM_TASK:
                 drawTask(false, tasks.dueDate, tasks.tasks);

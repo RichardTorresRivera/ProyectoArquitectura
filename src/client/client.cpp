@@ -66,11 +66,15 @@ AlarmTime getAlarm()
     // Leer los datos de Firebase
     if (Firebase.ready())
     {
-        if (Firebase.getString(firebaseData, "proxAlarm/nextAlarm/hour"))
+        if (Firebase.getString(firebaseData, "next_alarm/day"))
+        {
+            alarmTime.day = firebaseData.stringData();
+        }
+        if (Firebase.getString(firebaseData, "next_alarm/hour"))
         {
             alarmTime.hour = firebaseData.stringData();
         }
-        if (Firebase.getString(firebaseData, "proxAlarm/nextAlarm/minute"))
+        if (Firebase.getString(firebaseData, "next_alarm/minute"))
         {
             alarmTime.minute = firebaseData.stringData();
         }

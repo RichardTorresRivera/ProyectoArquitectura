@@ -60,6 +60,7 @@ struct AlarmTime
 {
     String hour;
     String minute;
+    String day;
 };
 
 struct Task
