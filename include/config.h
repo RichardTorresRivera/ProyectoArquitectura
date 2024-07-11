@@ -6,8 +6,8 @@
 #define WIFI_PASS ""
 // #define WIFI_SSID "Casa Aguilar"
 // #define WIFI_PASS "Alejandrina01"
-//  #define WIFI_SSID "Motorola One Macro"
-//  #define WIFI_PASS "holamundo"
+// #define WIFI_SSID "Motorola One Macro"
+// #define WIFI_PASS "holamundo"
 
 // Firebase
 #define FIREBASE_HOST "https://smart-13c8c-default-rtdb.firebaseio.com/"

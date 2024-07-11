@@ -89,23 +89,32 @@ void handleMsgWsp(byte &current)
     {
         String plainData = server.arg("plain");
 
-        // Dividir los datos en nombre de app y mensaje
-        int separatorIndex = plainData.indexOf('|');
-        if (separatorIndex != -1)
+        // Dividir los datos en app, título y mensaje
+        int firstSeparatorIndex = plainData.indexOf('|');
+        int secondSeparatorIndex = plainData.indexOf('|', firstSeparatorIndex + 1);
+
+        if (firstSeparatorIndex != -1 && secondSeparatorIndex != -1)
         {
-            String app = plainData.substring(0, separatorIndex);
-            String msg = plainData.substring(separatorIndex + 1);
-            if (app.equals("Whatsapp"))
+            String app = plainData.substring(0, firstSeparatorIndex);
+            String title = plainData.substring(firstSeparatorIndex + 1, secondSeparatorIndex);
+            String msg = plainData.substring(secondSeparatorIndex + 1);
+
+            if (app.equals("WhatsApp"))
             {
-                // Cambiar la pantalla actual a la pantalla de llamadas perdidas
+                // Cambiar la pantalla actual a la pantalla de notificaciones de WhatsApp
                 current = SCREEN_WSP;
-                // Mostrar el mensaje en la pantalla OLED
-                drawNotifications(app, msg);
+                // Mostrar el título y mensaje en la pantalla OLED
+                drawNotifications(app, title, msg);
                 playNotificationTone();
             }
             Serial.println("App: " + app);
+            Serial.println("Título: " + title);
             Serial.println("Mensaje: " + msg);
             server.send(200, "text/plain", "success");
+        }
+        else
+        {
+            server.send(400, "text/plain", "Incorrect format");
         }
     }
     else

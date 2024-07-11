@@ -227,10 +227,11 @@ void updateScreen()
         {
         case SCREEN_CLOCK:
             drawClock(true);
+            noTone(BUZZER);
             break;
         case SCREEN_ALARM:
             Serial.println("Alarma activada");
-            drawAlarm(true, alarma.hour, alarma.minute);
+            drawAlarm(true, alarma.hour, alarma.minute, alarma.day);
             break;
         case SCREEN_MENU:
             if (previusScreen != SCREEN_ITEM)
@@ -249,14 +250,13 @@ void updateScreen()
             switch (items[ITEM_SELECTED])
             {
             case ITEM_CHRONOMETER:
-                // drawChronometer(true, elapsedTime);
-                drawNotifications("Whats", "lorem ipsum y no se que mas, por que la vida es bella y bella es la vida");
+                drawChronometer(true, elapsedTime);
                 break;
             case ITEM_MUSIC:
                 drawMusic(true);
                 break;
             case ITEM_ALARM:
-                drawAlarm(true, alarma.hour, alarma.minute);
+                drawAlarm(true, alarma.hour, alarma.minute, alarma.day);
                 break;
             case ITEM_TASK:
                 drawTask(true, tasks.dueDate, tasks.tasks);
@@ -279,7 +279,7 @@ void updateScreen()
             drawClock(false);
             break;
         case SCREEN_ALARM:
-            drawAlarm(false, alarma.hour, alarma.minute);
+            drawAlarm(false, alarma.hour, alarma.minute, alarma.day);
             break;
         case SCREEN_MENU:
             items[ITEM_PREVIUS] = items[ITEM_SELECTED] - 1;
@@ -311,14 +311,13 @@ void updateScreen()
             switch (items[ITEM_SELECTED])
             {
             case ITEM_CHRONOMETER:
-                // drawChronometer(false, elapsedTime);
-                drawNotifications("Whats", "lorem ipsum y no se que mas, por que la vida es bella y bella es la vida");
+                drawChronometer(false, elapsedTime);
                 break;
             case ITEM_MUSIC:
                 drawMusic(false);
                 break;
             case ITEM_ALARM:
-                drawAlarm(false, alarma.hour, alarma.minute);
+                drawAlarm(false, alarma.hour, alarma.minute, alarma.day);
                 break;
             case ITEM_TASK:
                 drawTask(false, tasks.dueDate, tasks.tasks);
@@ -345,12 +344,10 @@ void loop()
     {
         elapsedTime = millis() - startTime;
     }
-    if (alarmActivated)
+    if (currentScreen == SCREEN_ALARM && alarmActivated)
     {
-        tone(BUZZER, 1200);
-        delay(500);
-        tone(BUZZER, 800);
-        delay(500);
+        tone(BUZZER, 3000, 500);
+        tone(BUZZER, 2000, 500);
     }
 
     updateScreen();
@@ -371,9 +368,9 @@ void loop0(void *parameter)
 
 void loop1(void *parameter)
 {
-    vTaskDelay(60000 / portTICK_PERIOD_MS);
     while (true)
     {
+        vTaskDelay(30000 / portTICK_PERIOD_MS);
         if (isAlarmTime(ntpClient, alarma, alarmActivated))
         {
             currentScreen = SCREEN_ALARM;

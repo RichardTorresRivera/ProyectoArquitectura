@@ -11,9 +11,9 @@ void drawMenuSound(bool fullRedraw, int items[]);
 // Items
 void drawChronometer(bool fullRedraw, unsigned long elapsedTime);
 void drawMusic(bool fullRedeaw);
-void drawAlarm(bool fullRedraw, const String hour, const String minute);
+void drawAlarm(bool fullRedraw, const String hour, const String minute, const String day);
 void drawTask(bool fullRedraw, const String dueDate, const std::vector<String> tasks);
-void drawNotifications(const String app, const String msg);
+void drawNotifications(const String app, const String title, const String msg);
 void drawSoundMovil(bool fullRedraw, short n);
 
 #endif
