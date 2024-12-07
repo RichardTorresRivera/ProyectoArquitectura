@@ -7,5 +7,6 @@
 extern WebServer server;
 
 void initServer(byte &current);
+void playNotificationTone()
 
 #endif

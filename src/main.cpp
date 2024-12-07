@@ -5,6 +5,9 @@
 #include "items/items.h"
 #include "client/client.h"
 
+//AlarmaActiva
+bool alarmActivated = false;
+
 // Tarea del nucleo 0
 TaskHandle_t Load;
 TaskHandle_t Alarm;
@@ -349,6 +352,15 @@ void loop()
         tone(BUZZER, 3000, 500);
         tone(BUZZER, 2000, 500);
     }
+
+    /*
+    Así funcionaría como ejemplo
+
+    if (isAlarmTime(ntpClient, alarmActivated))
+    {
+        Serial.println("Alarma activada");
+        playNotificationTone();
+    }*/
 
     updateScreen();
 }
